@@ -1,8 +1,7 @@
+import datetime
 import numpy as np
 from PyQt5.QtCore import pyqtSlot, QSettings
 from scipy.integrate import odeint
-import matplotlib.dates as mdates
-import pandas as pd
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -88,20 +87,31 @@ class CoronaSimulationDialog(QDialog):
         R0 = 0
         S0 = self.N - I0 - E0 - R0
 
-        days = 90
+        simulation_days = 90
 
-        t = np.linspace(0, days, days)
+        base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
+        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(simulation_days + 1)]
+
+        t = np.linspace(0, simulation_days, simulation_days)
         i = self.run_seir_model(S0, E0, I0, R0, t)
 
         self.ax.set_ylabel('Y')
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
         self.ax.cla()
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
         self.ax.minorticks_on()
 
-        self.ax.plot(pd.date_range(first_day, periods=len(actual_infected)), actual_infected, label='Actual')
-        self.ax.plot(pd.date_range(first_day, periods=days), i, label='Expected')
+        self.ax.plot(actual_infected, label='Actual')
+        self.ax.plot(i, label='Expected')
+        labels = self.ax.get_xticklabels()
+        labels2 = []
+        for i in range(len(labels)):
+            r = i / len(labels)
+            labels2.append(r)
+        labels2.append(1)
+
+        labels2 = [days[int(i * 90)] for i in labels2]
+        self.ax.set_xticklabels(labels2)
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
