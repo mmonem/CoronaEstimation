@@ -90,7 +90,7 @@ class CoronaSimulationDialog(QDialog):
         simulation_days = 90
 
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
-        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(simulation_days + 1)]
+        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(simulation_days)]
 
         t = np.linspace(0, simulation_days, simulation_days)
         i = self.run_seir_model(S0, E0, I0, R0, t)
@@ -100,18 +100,11 @@ class CoronaSimulationDialog(QDialog):
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
         self.ax.minorticks_on()
+        self.ax.set_xticklabels(days, rotation=90)
 
-        self.ax.plot(actual_infected, label='Actual')
-        self.ax.plot(i, label='Expected')
-        labels = self.ax.get_xticklabels()
-        labels2 = []
-        for i in range(len(labels)):
-            r = i / len(labels)
-            labels2.append(r)
-        labels2.append(1)
+        self.ax.plot(days[:len(actual_infected)], actual_infected, label='Actual')
+        self.ax.plot(days, i, label='Expected')
 
-        labels2 = [days[int(i * 90)] for i in labels2]
-        self.ax.set_xticklabels(labels2)
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
