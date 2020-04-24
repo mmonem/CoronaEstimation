@@ -34,7 +34,7 @@ Make sure you have installed the following libraries on your system:
 ### When using pipenv
 
 ```bash
-pipenv run main.py
+pipenv run python main.py
 ```
 ### Manually installed dependencies in the system 
 
