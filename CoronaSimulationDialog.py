@@ -88,7 +88,7 @@ class CoronaSimulationDialog(QDialog):
         R0 = 0
         S0 = self.N - I0 - E0 - R0
 
-        days = 30
+        days = 90
 
         t = np.linspace(0, days, days)
         i = self.run_seir_model(S0, E0, I0, R0, t)
@@ -100,8 +100,9 @@ class CoronaSimulationDialog(QDialog):
         self.ax.yaxis.grid()
         self.ax.minorticks_on()
 
-        self.ax.plot(pd.date_range(first_day, periods=15), actual_infected)
-        self.ax.plot(pd.date_range(first_day, periods=days), i)
+        self.ax.plot(pd.date_range(first_day, periods=len(actual_infected)), actual_infected, label='Actual')
+        self.ax.plot(pd.date_range(first_day, periods=days), i, label='Expected')
+        self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
     def run_seir_model(self, s0, e0, i0, r0, t):
