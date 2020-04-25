@@ -7,19 +7,18 @@ from math import sqrt
 from scipy.stats import invgamma, gamma
 
 class RtEstimator:
-    def __init__(self):
+    def __init__(self, incidence, si_mean, si_sd):
         self.TimeMin = 1
-        self.TimeMax = 67
-        self.Incidence = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 34, 6, 4, 1, 7, 13, 29, 1, 40, 46, 0, 60, 29, 9, 33, 39, 36, 54, 39, 41, 40, 33, 47, 54, 69, 86, 120, 85, 103, 149,
-            128, 110, 139, 95, 145, 126, 125, 160, 155, 168, 171, 188, 112, 189]
+        self.TimeMax = len(incidence)
+        self.Incidence = incidence
         self.aPrior = 0.0
         self.bPrior = 0.0
         self.startTime = []
         self.endTime = []
         self.NbTimePeriods = 0
         self.StartEstimDate = 0
-        self.MeanSI = 5.1
-        self.sdSI = 1
+        self.MeanSI = si_mean
+        self.sdSI = si_sd
 
     def estimR(self):
         self.ReadPrior()

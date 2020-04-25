@@ -143,4 +143,8 @@ class CoronaSimulationDialog(QDialog):
 
     @pyqtSlot()
     def estimate_R(self):
-        RtEstimator().estimR()
+        actual_infected = self.actual_data[:, 1]
+        actual_infected = [int(i) for i in actual_infected]
+        incidents = [actual_infected[0]]
+        incidents.extend(np.diff(actual_infected))
+        RtEstimator(incidents, 5.1, 1).estimR()
