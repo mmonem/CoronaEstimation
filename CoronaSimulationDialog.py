@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import csv
 
-from estimate_R import estimR
+from RtEstimator import RtEstimator
 from gen.Ui_CoronaSimulationDialog import Ui_CoronaSimulationDialog
 
 
@@ -143,4 +143,4 @@ class CoronaSimulationDialog(QDialog):
 
     @pyqtSlot()
     def estimate_R(self):
-        estimR()
+        RtEstimator().estimR()
