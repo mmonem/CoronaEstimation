@@ -4,7 +4,7 @@
 
 from math import sqrt
 
-from scipy.stats import invgamma, gamma
+from scipy.stats import gamma
 
 class RtEstimator:
     def __init__(self, incidence, si_mean, si_sd):
@@ -109,6 +109,7 @@ class RtEstimator:
             RQuantile95[TimePeriodNb - 1] = gamma.ppf(0.95, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             RQuantile975[TimePeriodNb - 1] = gamma.ppf(0.975, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             TimePeriodNb = TimePeriodNb + 1
+        return RQuantile975
 
 
     def Lambda(self, t, SIDistr):

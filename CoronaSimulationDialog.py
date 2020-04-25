@@ -26,6 +26,7 @@ class CoronaSimulationDialog(QDialog):
         self.beta = .25  # Infection rate
         self.gamma = .15  # The Removal rate
         self.Ro = round(self.beta / self.gamma, 2)
+        self.Rt = []
         self.a = .2  # Onset rate, the inverse of the incubation period
         self.actual_data = []
 
@@ -82,18 +83,18 @@ class CoronaSimulationDialog(QDialog):
         actual_infected = [int(i) for i in actual_infected]
         first_day = days[0]
 
-        I0 = actual_infected[0]
-        E0 = 0
+        I0 = actual_infected[len(actual_infected) - 1]
         R0 = 0
-        S0 = self.N - I0 - E0 - R0
+        S0 = self.N - I0 - R0
 
-        simulation_days = 90
+        simulation_days = 30
 
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
-        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(simulation_days)]
+        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + simulation_days)]
 
         t = np.linspace(0, simulation_days, simulation_days)
-        i = self.run_seir_model(S0, E0, I0, R0, t)
+        i = self.run_sir_model(S0, I0, R0, t)
+        i = np.delete(i, 0)
 
         self.ax.set_ylabel('Y')
         self.ax.cla()
@@ -103,22 +104,21 @@ class CoronaSimulationDialog(QDialog):
         self.ax.set_xticklabels(days, rotation=90)
 
         self.ax.plot(days[:len(actual_infected)], actual_infected, label='Actual')
-        self.ax.plot(days, i, label='Expected')
+        self.ax.plot(days[-len(i):], i, label='Expected')
 
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
-    def run_seir_model(self, s0, e0, i0, r0, t):
-        ret = odeint(self.derive_seir_model, (s0, e0, i0, r0), t)
-        return ret[:, 2]
+    def run_sir_model(self, s0, i0, r0, t):
+        ret = odeint(self.derive_sir_model, (s0, i0, r0), t)
+        return ret[:, 1]
 
-    def derive_seir_model(self, y, t):
-        s, e, i, r = y
-        se = self.beta * s * i / self.N
-        ei = self.a * e
+    def derive_sir_model(self, y, t):
+        s, i, r = y
+        beta = self.Ro * self.gamma
+        se = beta * s * i / self.N
         ir = self.gamma * i
-        # return -se, se - ei, ei - ir, ir
-        return -se, 0, se - ir, ir
+        return -se, se - ir, ir
 
     def reflect_params_to_ui(self):
         self.ui.labelBeta.setText("Beta: " + str(self.beta))
@@ -147,4 +147,10 @@ class CoronaSimulationDialog(QDialog):
         actual_infected = [int(i) for i in actual_infected]
         incidents = [actual_infected[0]]
         incidents.extend(np.diff(actual_infected))
-        RtEstimator(incidents, 5.1, 1).estimR()
+        self.Rt = RtEstimator(incidents, 5.1, 1).estimR()
+        if (len(self.Rt) > 0):
+            self.Ro = self.Rt[0]
+            for r in self.Rt:
+                if r > 0:
+                    self.Ro = r
+            self.ui.sliderRo.setValue(self.Ro * 100)
