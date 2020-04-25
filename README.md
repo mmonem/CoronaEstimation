@@ -27,7 +27,6 @@ Make sure you have installed the following libraries on your system:
     [numpy](https://pypi.org/project/numpy)
     [scipy](https://pypi.org/project/scipy)
     [matplotlib](https://pypi.org/project/matplotlib)
-    [pandas](https://pypi.org/project/pandas)
 
 ## Usage
 

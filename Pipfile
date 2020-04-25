@@ -10,7 +10,6 @@ pyqt5 = "*"
 numpy = "*"
 scipy = "*"
 matplotlib = "*"
-pandas = "*"
 
 [requires]
 python_version = "3.7"
