@@ -26,13 +26,11 @@ class RtEstimator:
 
         # 'error message if inconsistent data
         if self.MeanSI <= 1:
-            print("The mean serial interval must be >1 time step of incidence. Estimation aborted.")
-            exit(1)
+            raise Exception("The mean serial interval must be >1 time step of incidence. Estimation aborted.")
 
         # 'error message if inconsistent data
         if self.sdSI < 0:
-            print("The std of the serial interval must be >=0. Estimation aborted.")
-            exit(1)
+            raise Exception("The std of the serial interval must be >=0. Estimation aborted.")
 
         # ''' Different code when accounting or not accounting for serial interval uncertainty '''
 
@@ -64,29 +62,24 @@ class RtEstimator:
 
         # 'error message if inconsistent data
         if SumPi < 0.99:
-            print("The epidemic is too short compared to the distribution of the SI. Estimation aborted.")
-            exit(1)
+            raise Exception("The epidemic is too short compared to the distribution of the SI. Estimation aborted.")
 
         MeanSIFinal = SumPiXi
         sdSIFinal = sqrt(SumPiXi2 - SumPiXi * SumPiXi)
 
         for t in range(self.TimeMin, self.TimeMax + 1):
             if t == self.TimeMin and SIDistr[t - self.TimeMin] != 0:
-                print("serial interval distribution at time " + str(t) + " is not null." + "\n" + "Our model does not account for the possibility that index cases infect individuals on the very day when they are infected" + "\n" + "Estimation aborted.")
-                exit(1)
+                raise Exception("serial interval distribution at time " + str(t) + " is not null." + "\n" + "Our model does not account for the possibility that index cases infect individuals on the very day when they are infected" + "\n" + "Estimation aborted.")
 
             if SIDistr[t - self.TimeMin] < 0:
-                print("serial interval distribution at time " + str(t) + " is negative. Estimation aborted.")
-                exit(1)
+                raise Exception("serial interval distribution at time " + str(t) + " is negative. Estimation aborted.")
 
             if abs(SumPi - 1) > 0.01:
-                print("Error: the serial interval distribution you provided does not sum to 1. Estimation aborted.")
-                exit(1)
+                raise Exception("Error: the serial interval distribution you provided does not sum to 1. Estimation aborted.")
 
 
         if MeanSIFinal < 1:
-            print("The parameters you provided lead to a mean discrete serial interval <1 time step of incidence. Estimation aborted.")
-            exit(1)
+            raise Exception("The parameters you provided lead to a mean discrete serial interval <1 time step of incidence. Estimation aborted.")
 
         self.StartEstimDate = max(self.StartEstimDate, MeanSIFinal)
 
@@ -94,16 +87,14 @@ class RtEstimator:
 
         TimePeriodNb = 1
         if self.endTime[TimePeriodNb - 1] < self.StartEstimDate:
-            print("Warning: you are trying to estimate R too early in the epidemic to get the desired posterior CV. Estimation will be performed anyway. Click here to continue.")
+            raise Exception("You are trying to estimate R too early in the epidemic to get the desired posterior CV")
 
 
         while self.endTime[TimePeriodNb - 1] != 0:
             if self.startTime[TimePeriodNb - 1]> self.endTime[TimePeriodNb - 1]:
-                print("Time period " + str(TimePeriodNb) + " has its starting date after its ending date. Estimation aborted.")
-                exit(1)
+                raise Exception("Time period " + str(TimePeriodNb) + " has its starting date after its ending date. Estimation aborted.")
             elif self.endTime[TimePeriodNb - 1] > self.TimeMax:
-                print("Time period " + str(TimePeriodNb) + " ends after the end of the epidemic.  Estimation aborted.")
-                exit(1)
+                raise Exception("Time period " + str(TimePeriodNb) + " ends after the end of the epidemic.  Estimation aborted.")
 
             Res = self.CalculatePosterior(SIDistr, TimePeriodNb)
             aPosterior[TimePeriodNb - 1] = Res[0]
@@ -117,7 +108,6 @@ class RtEstimator:
             RQuantile75[TimePeriodNb - 1] = gamma.ppf(0.75, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             RQuantile95[TimePeriodNb - 1] = gamma.ppf(0.95, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             RQuantile975[TimePeriodNb - 1] = gamma.ppf(0.975, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
-            print(RQuantile975)
             TimePeriodNb = TimePeriodNb + 1
 
 
