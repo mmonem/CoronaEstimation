@@ -136,6 +136,24 @@
       </layout>
      </item>
      <item>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QLineEdit" name="lineEditSimulationDays">
+         <property name="text">
+          <string>30</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Simulation Days</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -227,6 +245,12 @@
      <y>288</y>
     </hint>
    </hints>
+  </connection>
+  <connection>
+   <sender>lineEditSimulationDays</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>CoronaSimulationDialog</receiver>
+   <slot>simulationDaysChanged(QString)</slot>
   </connection>
  </connections>
 </ui>

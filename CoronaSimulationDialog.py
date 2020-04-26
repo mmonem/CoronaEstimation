@@ -29,6 +29,7 @@ class CoronaSimulationDialog(QDialog):
         self.Rt = []
         self.a = .2  # Onset rate, the inverse of the incubation period
         self.actual_data = []
+        self.simulation_days = 30
 
         actual_data_file = QSettings().value("actual_data_file", "")
         if actual_data_file:
@@ -87,20 +88,22 @@ class CoronaSimulationDialog(QDialog):
         R0 = 0
         S0 = self.N - I0 - R0
 
-        simulation_days = 30
-
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
-        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + simulation_days)]
+        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + self.simulation_days)]
 
-        t = np.linspace(0, simulation_days, simulation_days)
+        t = np.linspace(0, self.simulation_days, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
         i = np.delete(i, 0)
+        peak_index = np.argmax(i) + len(actual_infected)
+        actual_data_index = len(actual_infected)
+        peak_day = days[peak_index]
+        plot_start_day = days[actual_data_index - 3]
 
         self.ax.set_ylabel('Y')
         self.ax.cla()
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
-        self.ax.minorticks_on()
+        # self.ax.minorticks_on()
         self.ax.set_xticklabels(days, rotation=90)
 
         self.ax.plot(days[:len(actual_infected)], actual_infected, label='Actual')
@@ -154,3 +157,14 @@ class CoronaSimulationDialog(QDialog):
                 if r > 0:
                     self.Ro = r
             self.ui.sliderRo.setValue(self.Ro * 100)
+
+    @pyqtSlot()
+    def simulationDaysChanged(self):
+        default = 30
+        str = self.ui.lineEditSimulationDays.text()
+        x = int(str)
+        if x < 10:
+            x = default
+        if self.simulation_days != x:
+            self.simulation_days = x
+            self.start_execution()
