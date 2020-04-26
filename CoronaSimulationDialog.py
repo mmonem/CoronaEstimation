@@ -1,6 +1,7 @@
 import datetime
 import numpy as np
 from PyQt5.QtCore import pyqtSlot, QSettings
+from matplotlib.ticker import FuncFormatter
 from scipy.integrate import odeint
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -30,6 +31,7 @@ class CoronaSimulationDialog(QDialog):
         self.a = .2  # Onset rate, the inverse of the incubation period
         self.actual_data = []
         self.simulation_days = 30
+        self.days = []
 
         actual_data_file = QSettings().value("actual_data_file", "")
         if actual_data_file:
@@ -74,6 +76,14 @@ class CoronaSimulationDialog(QDialog):
         self.reflect_params_to_ui()
         self.start_execution()
 
+    def x_formatter(self, x, pos):
+        if pos % 10 == 0:
+            return self.days[x]
+        return ''
+
+    def y_formatter(self, x, pos):
+        return '{:,}'.format(int(x))
+
     def start_execution(self):
         if len(self.actual_data) < 4:
             return
@@ -89,26 +99,30 @@ class CoronaSimulationDialog(QDialog):
         S0 = self.N - I0 - R0
 
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
-        days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + self.simulation_days)]
+        self.days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + self.simulation_days)]
 
         t = np.linspace(0, self.simulation_days, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
         i = np.delete(i, 0)
         peak_index = np.argmax(i) + len(actual_infected)
         actual_data_index = len(actual_infected)
-        peak_day = days[peak_index]
-        plot_start_day = days[actual_data_index - 3]
+        peak_day = self.days[peak_index]
+        plot_start_day = self.days[actual_data_index - 3]
 
         self.ax.set_ylabel('Y')
         self.ax.cla()
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
         # self.ax.minorticks_on()
-        self.ax.set_xticklabels(days, rotation=90)
+        self.ax.set_xticklabels(self.days, rotation=90)
+        self.ax.xaxis.set_major_formatter(FuncFormatter(self.x_formatter))
+        self.ax.yaxis.set_major_formatter(FuncFormatter(self.y_formatter))
 
-        self.ax.plot(days[:len(actual_infected)], actual_infected, label='Actual')
-        self.ax.plot(days[-len(i):], i, label='Expected')
+        # self.ax.ticklabel_format(axis="x", style="plain")
+        self.ax.plot(self.days[:len(actual_infected)], actual_infected, label='Actual')
+        self.ax.plot(self.days[-len(i):], i, label='Expected')
 
+        # self.ax.set_xlim(plot_start_day, peak_day)
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
