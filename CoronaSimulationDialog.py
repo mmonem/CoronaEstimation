@@ -128,13 +128,13 @@ class CoronaSimulationDialog(QDialog):
         t = np.linspace(t0, t0 + self.simulation_days - 1, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
         i = np.delete(i, 0)
-        peak_index = np.argmax(i) + len(actual_infected)
-        actual_data_index = len(actual_infected)
 
         ax2 = self.ax.twinx()
         ax2.set_ylabel('R')
         t_for_r = [self.days[i] for i in [int(i) for i in self.Rt_t1]]
+        ax2.cla()
         ax2.plot(t_for_r, self.Rt, color='red', label='R')
+        ax2.plot(t, self.rt_interpolate(t), '--', color='red', label='R projected')
         ax2.legend(loc="upper left")
 
         self.ax.cla()
