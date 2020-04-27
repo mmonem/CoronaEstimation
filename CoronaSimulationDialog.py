@@ -133,8 +133,8 @@ class CoronaSimulationDialog(QDialog):
 
         ax2 = self.ax.twinx()
         ax2.set_ylabel('R')
-        t = [self.days[i] for i in [int(i) for i in self.Rt_t1]]
-        ax2.plot(t, self.Rt, color='red', label='R')
+        t_for_r = [self.days[i] for i in [int(i) for i in self.Rt_t1]]
+        ax2.plot(t_for_r, self.Rt, color='red', label='R')
         ax2.legend(loc="upper left")
 
         self.ax.cla()
