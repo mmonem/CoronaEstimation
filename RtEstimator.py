@@ -109,7 +109,7 @@ class RtEstimator:
             RQuantile95[TimePeriodNb - 1] = gamma.ppf(0.95, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             RQuantile975[TimePeriodNb - 1] = gamma.ppf(0.975, aPosterior[TimePeriodNb - 1], scale=bPosterior[TimePeriodNb - 1])
             TimePeriodNb = TimePeriodNb + 1
-        return RQuantile975
+        return RQuantile975, self.startTime
 
 
     def Lambda(self, t, SIDistr):

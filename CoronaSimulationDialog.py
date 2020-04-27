@@ -8,6 +8,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import csv
 
+from scipy.interpolate import interp1d
+
 from RtEstimator import RtEstimator
 from gen.Ui_CoronaSimulationDialog import Ui_CoronaSimulationDialog
 
@@ -28,6 +30,8 @@ class CoronaSimulationDialog(QDialog):
         self.gamma = .15  # The Removal rate
         self.Ro = round(self.beta / self.gamma, 2)
         self.Rt = []
+        self.Rt_t1 = []
+        self.rt_interpolate = None
         self.a = .2  # Onset rate, the inverse of the incubation period
         self.actual_data = []
         self.simulation_days = 30
@@ -36,6 +40,8 @@ class CoronaSimulationDialog(QDialog):
         actual_data_file = QSettings().value("actual_data_file", "")
         if actual_data_file:
             self.load_actual_data_file(actual_data_file)
+
+        self.load_r()
 
         self.ui.sliderRo.setValue(self.Ro * 100)
         self.ui.sliderGamma.setValue(.15 * 1000)
@@ -47,6 +53,25 @@ class CoronaSimulationDialog(QDialog):
         self.ui.sliderRo.valueChanged.connect(self.r0_value_changed)
 
         self.start_execution()
+
+    def load_r(self):
+        r = QSettings().value("rt_values", [])
+        r = [float(i) for i in r]
+        rt = QSettings().value("rt_times", [])
+        rt = [float(i) for i in rt]
+        self.set_r(r, rt)
+
+    def set_r(self, r, rt):
+        self.Rt = r
+        self.Rt_t1 = rt
+        x = self.Rt_t1[-5:]
+        y = self.Rt[-5:]
+        self.rt_interpolate = interp1d(x, y, kind = 'linear', fill_value="extrapolate")
+        QSettings().setValue("rt_values", self.Rt)
+        QSettings().setValue("rt_times", self.Rt_t1)
+        if (len(self.Rt) > 0):
+            self.Ro = self.Rt[len(self.Rt) - 1]
+            self.ui.sliderRo.setValue(self.Ro * 100)
 
     def gamma_value_changed(self):
         self.gamma = round((self.ui.sliderGamma.value()) / 1000.0, 3)
@@ -85,14 +110,12 @@ class CoronaSimulationDialog(QDialog):
         return '{:,}'.format(int(x))
 
     def start_execution(self):
-        if len(self.actual_data) < 4:
+        if len(self.actual_data) < 4 or len(self.Rt) < 1:
             return
 
-        days = self.actual_data[:, 0]
-        days = [np.unicode(i) for i in days]
         actual_infected = self.actual_data[:, 1]
         actual_infected = [int(i) for i in actual_infected]
-        first_day = days[0]
+        first_day = np.unicode(self.actual_data[0:1, 0].item(0))
 
         I0 = actual_infected[len(actual_infected) - 1]
         R0 = 0
@@ -101,15 +124,19 @@ class CoronaSimulationDialog(QDialog):
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
         self.days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + self.simulation_days)]
 
-        t = np.linspace(0, self.simulation_days, self.simulation_days)
+        t0 = len(actual_infected)
+        t = np.linspace(t0, t0 + self.simulation_days - 1, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
         i = np.delete(i, 0)
         peak_index = np.argmax(i) + len(actual_infected)
         actual_data_index = len(actual_infected)
-        peak_day = self.days[peak_index]
-        plot_start_day = self.days[actual_data_index - 3]
 
-        self.ax.set_ylabel('Y')
+        ax2 = self.ax.twinx()
+        ax2.set_ylabel('R')
+        t = [self.days[i] for i in [int(i) for i in self.Rt_t1]]
+        ax2.plot(t, self.Rt, color='red', label='R')
+        ax2.legend(loc="upper left")
+
         self.ax.cla()
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
@@ -132,7 +159,7 @@ class CoronaSimulationDialog(QDialog):
 
     def derive_sir_model(self, y, t):
         s, i, r = y
-        beta = self.Ro * self.gamma
+        beta = self.rt_interpolate(t).item(0) * self.gamma
         se = beta * s * i / self.N
         ir = self.gamma * i
         return -se, se - ir, ir
@@ -164,13 +191,10 @@ class CoronaSimulationDialog(QDialog):
         actual_infected = [int(i) for i in actual_infected]
         incidents = [actual_infected[0]]
         incidents.extend(np.diff(actual_infected))
-        self.Rt = RtEstimator(incidents, 5.1, 1).estimR()
-        if (len(self.Rt) > 0):
-            self.Ro = self.Rt[0]
-            for r in self.Rt:
-                if r > 0:
-                    self.Ro = r
-            self.ui.sliderRo.setValue(self.Ro * 100)
+        r, rt = RtEstimator(incidents, 5.1, 1).estimR()
+        rt = np.trim_zeros(rt)
+        r = r[:len(rt)]
+        self.set_r(r, rt)
 
     @pyqtSlot()
     def simulationDaysChanged(self):
