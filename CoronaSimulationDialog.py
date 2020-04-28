@@ -10,6 +10,7 @@ import csv
 
 from scipy.interpolate import interp1d
 
+from RoTableModel import RoTableModel
 from RtEstimator import RtEstimator
 from gen.Ui_CoronaSimulationDialog import Ui_CoronaSimulationDialog
 
@@ -41,8 +42,6 @@ class CoronaSimulationDialog(QDialog):
         if actual_data_file:
             self.load_actual_data_file(actual_data_file)
 
-        self.load_r()
-
         self.ui.sliderRo.setValue(self.Ro * 100)
         self.ui.sliderGamma.setValue(.15 * 1000)
         self.ui.sliderBeta.setValue(.25 * 1000)
@@ -52,9 +51,6 @@ class CoronaSimulationDialog(QDialog):
         self.ui.sliderBeta.valueChanged.connect(self.beta_value_changed)
         self.ui.sliderRo.valueChanged.connect(self.r0_value_changed)
 
-        self.start_execution()
-
-    def load_r(self):
         r = QSettings().value("rt_values", [])
         r = [float(i) for i in r]
         rt = QSettings().value("rt_times", [])
@@ -66,9 +62,10 @@ class CoronaSimulationDialog(QDialog):
         self.Rt_t1 = rt
         QSettings().setValue("rt_values", self.Rt)
         QSettings().setValue("rt_times", self.Rt_t1)
-        if (len(self.Rt) > 0):
-            self.Ro = self.Rt[len(self.Rt) - 1]
-            self.ui.sliderRo.setValue(self.Ro * 100)
+        data = [["{:d}:{:.2f}".format(int(rt[i]), float(r[i])) for i in range(len(rt))]]
+        self.ui.tableViewR.setModel(RoTableModel(data))
+        self.ui.tableViewR.model().dataChanged.connect(self.r_updated)
+        self.start_execution()
 
     def gamma_value_changed(self):
         self.gamma = round((self.ui.sliderGamma.value()) / 1000.0, 3)
@@ -211,3 +208,19 @@ class CoronaSimulationDialog(QDialog):
         if self.simulation_days != x:
             self.simulation_days = x
             self.start_execution()
+
+    @pyqtSlot()
+    def r_updated(self):
+        t = []
+        r = []
+        m = self.ui.tableViewR.model()
+        data = m.get_raw_data()
+        for row in data:
+            for c in row:
+                try:
+                    x, y = c.split(':')
+                    t.append(float(x))
+                    r.append(float(y))
+                except:
+                    continue
+        self.set_r(r, t)
