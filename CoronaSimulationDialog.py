@@ -23,6 +23,7 @@ class CoronaSimulationDialog(QDialog):
         self.fig = Figure()
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax = self.canvas.figure.add_subplot(111)
+        self.ax2 = self.ax.twinx()
         self.ui.figuresLayout.addWidget(self.canvas)
         self.showMaximized()
 
@@ -130,14 +131,14 @@ class CoronaSimulationDialog(QDialog):
         i = i[1:]
 
         self.ax.cla()
-        ax2 = self.ax.twinx()
-        ax2.set_ylabel('R')
+        self.ax2.cla()
+        self.ax2.set_ylabel('R')
         t_for_r = [int(i) for i in self.Rt_t1]
         self.ax.xaxis.set_major_locator(LinearLocator(50))
-        ax2.plot(t_for_r, self.Rt, color='red', label='R')
+        self.ax2.plot(t_for_r, self.Rt, color='red', label='R')
         t_for_r2 = [int(i) for i in t]
-        ax2.plot(t_for_r2, self.rt0_interpolate(t), '--', color='red', label='R projected')
-        ax2.legend(loc="upper left")
+        self.ax2.plot(t_for_r2, self.rt0_interpolate(t), '--', color='red', label='R projected')
+        self.ax2.legend(loc="upper left")
 
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
