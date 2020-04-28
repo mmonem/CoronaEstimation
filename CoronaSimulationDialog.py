@@ -1,7 +1,7 @@
 import datetime
 import numpy as np
 from PyQt5.QtCore import pyqtSlot, QSettings
-from matplotlib.ticker import FuncFormatter
+from matplotlib.ticker import FuncFormatter, MultipleLocator, MaxNLocator, LinearLocator
 from scipy.integrate import odeint
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -102,7 +102,8 @@ class CoronaSimulationDialog(QDialog):
         self.start_execution()
 
     def x_formatter(self, x, pos):
-        if pos % 10 == 0:
+        x = int(x)
+        if 0 < x < len(self.days):
             return self.days[x]
         return ''
 
@@ -127,17 +128,17 @@ class CoronaSimulationDialog(QDialog):
         t0 = len(actual_infected)
         t = np.linspace(t0, t0 + self.simulation_days - 1, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
-        i = np.delete(i, 0)
-
-        ax2 = self.ax.twinx()
-        ax2.set_ylabel('R')
-        t_for_r = [self.days[i] for i in [int(i) for i in self.Rt_t1]]
-        ax2.cla()
-        ax2.plot(t_for_r, self.Rt, color='red', label='R')
-        ax2.plot(t, self.rt_interpolate(t), '--', color='red', label='R projected')
-        ax2.legend(loc="upper left")
 
         self.ax.cla()
+        ax2 = self.ax.twinx()
+        ax2.set_ylabel('R')
+        t_for_r = [int(i) for i in self.Rt_t1]
+        self.ax.xaxis.set_major_locator(LinearLocator(50))
+        ax2.plot(t_for_r, self.Rt, color='red', label='R')
+        t_for_r2 = [int(i) for i in t]
+        ax2.plot(t_for_r2, self.rt_interpolate(t), '--', color='red', label='R projected')
+        ax2.legend(loc="upper left")
+
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
         # self.ax.minorticks_on()
@@ -145,11 +146,10 @@ class CoronaSimulationDialog(QDialog):
         self.ax.xaxis.set_major_formatter(FuncFormatter(self.x_formatter))
         self.ax.yaxis.set_major_formatter(FuncFormatter(self.y_formatter))
 
-        # self.ax.ticklabel_format(axis="x", style="plain")
-        self.ax.plot(self.days[:len(actual_infected)], actual_infected, label='Actual')
-        self.ax.plot(self.days[-len(i):], i, label='Expected')
+        self.ax.plot(list(range(len(actual_infected))), actual_infected, label='Actual')
+        self.ax.plot(list(range(len(actual_infected), len(actual_infected) + self.simulation_days)), i, label='Expected')
 
-        # self.ax.set_xlim(plot_start_day, peak_day)
+        self.ax.set_xlim(0, len(actual_infected) + self.simulation_days)
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
 
