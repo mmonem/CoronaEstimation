@@ -31,7 +31,7 @@ class CoronaSimulationDialog(QDialog):
         self.Ro = round(self.beta / self.gamma, 2)
         self.Rt = []
         self.Rt_t1 = []
-        self.rt_interpolate = None
+        self.rt0_interpolate = None
         self.a = .2  # Onset rate, the inverse of the incubation period
         self.actual_data = []
         self.simulation_days = 30
@@ -64,9 +64,6 @@ class CoronaSimulationDialog(QDialog):
     def set_r(self, r, rt):
         self.Rt = r
         self.Rt_t1 = rt
-        x = self.Rt_t1[-5:]
-        y = self.Rt[-5:]
-        self.rt_interpolate = interp1d(x, y, kind = 'nearest', fill_value="extrapolate")
         QSettings().setValue("rt_values", self.Rt)
         QSettings().setValue("rt_times", self.Rt_t1)
         if (len(self.Rt) > 0):
@@ -122,6 +119,11 @@ class CoronaSimulationDialog(QDialog):
         R0 = 0
         S0 = self.N - I0 - R0
 
+        x = self.Rt_t1[-5:]
+        y = self.Rt[-5:]
+        y = [x * S0 / self.N for x in y] # Multiplying by S/N as suggested by Dr. Aly Farahat
+        self.rt0_interpolate = interp1d(x, y, kind ='nearest', fill_value="extrapolate")
+
         base = datetime.datetime.strptime(first_day, '%Y-%m-%d')
         self.days = [(base + datetime.timedelta(days=x)).strftime('%Y-%m-%d') for x in range(len(actual_infected) + self.simulation_days)]
 
@@ -137,7 +139,7 @@ class CoronaSimulationDialog(QDialog):
         self.ax.xaxis.set_major_locator(LinearLocator(50))
         ax2.plot(t_for_r, self.Rt, color='red', label='R')
         t_for_r2 = [int(i) for i in t]
-        ax2.plot(t_for_r2, self.rt_interpolate(t), '--', color='red', label='R projected')
+        ax2.plot(t_for_r2, self.rt0_interpolate(t), '--', color='red', label='R projected')
         ax2.legend(loc="upper left")
 
         self.ax.xaxis.grid()
@@ -162,10 +164,10 @@ class CoronaSimulationDialog(QDialog):
 
     def derive_sir_model(self, y, t):
         s, i, r = y
-        beta = self.rt_interpolate(t).item(0) * self.gamma
-        se = beta * s * i / self.N
+        beta = self.rt0_interpolate(t).item(0) * self.gamma
+        si = beta * s * i / self.N
         ir = self.gamma * i
-        return -se, se - ir, ir
+        return -si, si - ir, ir
 
     def reflect_params_to_ui(self):
         self.ui.labelBeta.setText("Beta: " + str(self.beta))
