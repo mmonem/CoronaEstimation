@@ -128,6 +128,7 @@ class CoronaSimulationDialog(QDialog):
         t0 = len(actual_infected)
         t = np.linspace(t0, t0 + self.simulation_days - 1, self.simulation_days)
         i = self.run_sir_model(S0, I0, R0, t)
+        i = i[1:]
 
         self.ax.cla()
         ax2 = self.ax.twinx()
@@ -147,7 +148,9 @@ class CoronaSimulationDialog(QDialog):
         self.ax.yaxis.set_major_formatter(FuncFormatter(self.y_formatter))
 
         self.ax.plot(list(range(len(actual_infected))), actual_infected, label='Actual')
-        self.ax.plot(list(range(len(actual_infected), len(actual_infected) + self.simulation_days)), i, label='Expected')
+        t_for_i = [int(i) for i in t]
+        t_for_i = t_for_i[:len(t_for_i) - 1]
+        self.ax.plot(t_for_i, i, label='Expected')
 
         self.ax.set_xlim(0, len(actual_infected) + self.simulation_days)
         self.ax.legend(loc="upper right")
