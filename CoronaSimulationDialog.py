@@ -66,7 +66,7 @@ class CoronaSimulationDialog(QDialog):
         self.Rt_t1 = rt
         x = self.Rt_t1[-5:]
         y = self.Rt[-5:]
-        self.rt_interpolate = interp1d(x, y, kind = 'linear', fill_value="extrapolate")
+        self.rt_interpolate = interp1d(x, y, kind = 'nearest', fill_value="extrapolate")
         QSettings().setValue("rt_values", self.Rt)
         QSettings().setValue("rt_times", self.Rt_t1)
         if (len(self.Rt) > 0):
