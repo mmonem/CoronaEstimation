@@ -8,7 +8,7 @@ class RoTableModel(QtCore.QAbstractTableModel):
         self._data = data
 
     def data(self, index, role):
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return self._data[index.row()][index.column()]
 
     # noinspection PyUnusedLocal
