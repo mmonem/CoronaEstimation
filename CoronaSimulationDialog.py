@@ -42,6 +42,11 @@ class CoronaSimulationDialog(QDialog):
         self.ui.sliderBeta.valueChanged.connect(self.beta_value_changed)
         self.ui.sliderRo.valueChanged.connect(self.r0_value_changed)
 
+        r, rt = self.load_r()
+        self.set_r(r, rt)
+
+    @staticmethod
+    def load_r():
         r = QSettings().value("rt_values", [])
         if isinstance(r, list):
             r = [float(i) for i in r]
@@ -52,12 +57,14 @@ class CoronaSimulationDialog(QDialog):
             rt = [float(i) for i in rt]
         else:
             rt = []
-        self.set_r(r, rt)
+        return r, rt
+
+    def save_r(self):
+        QSettings().setValue("rt_values", self.sir.Rt)
+        QSettings().setValue("rt_times", self.sir.Rt_t1)
 
     def set_r(self, r, t):
         self.sir.set_r(r, t)
-        QSettings().setValue("rt_values", self.sir.Rt)
-        QSettings().setValue("rt_times", self.sir.Rt_t1)
         data = [["{:d}:{:.2f}".format(int(t[i]), float(r[i])) for i in range(len(t))]]
         self.ui.tableViewR.setModel(RoTableModel(data))
         self.ui.tableViewR.model().dataChanged.connect(self.r_updated)
@@ -174,6 +181,7 @@ class CoronaSimulationDialog(QDialog):
         rt = np.trim_zeros(rt)
         r = r[:len(rt)]
         self.set_r(r, rt)
+        self.save_r()
 
     @pyqtSlot()
     def simulationDaysChanged(self):
@@ -201,3 +209,4 @@ class CoronaSimulationDialog(QDialog):
                 except:
                     continue
         self.set_r(r, t)
+        self.save_r()
