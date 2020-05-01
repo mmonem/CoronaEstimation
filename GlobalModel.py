@@ -1,23 +1,32 @@
 from SIR import SIR
 
 
-class GlobalModel(SIR):
+class GlobalModel():
     def __init__(self):
         super().__init__()
-        self._m1 = SIR()
-        self._m2 = SIR()
+        self._communities_sir_models = []
+        self.Rt = None
+        self.Rt_t1 = []
+        self.actual_data = []
 
-    def set_r(self, r, t):
-        super().set_r(r, t)
-        self._m1.set_r(r, t)
-        self._m2.set_r(r, t)
-
-    def execute(self, t, s0, i0, r0):
-        super().execute(t, s0, i0, r0)
-
-        i1 = self._m1.execute(t, s0 / 2, i0 / 2, r0 / 2)
-        i2 = self._m2.execute(t, s0 / 2, i0 / 2, r0 / 2)
-
-        i = i1 + i2
+    def execute(self, t):
+        i = []
+        x = 0
+        for sir in self._communities_sir_models:
+            s0 = self.actual_data.item((-1, x * 3))
+            i0 = self.actual_data.item((-1, x * 3 + 1))
+            r0 = self.actual_data.item((-1, x * 3 + 2))
+            sir.set_r(self.Rt[:,x].tolist(), self.Rt_t1)
+            infected = sir.execute(t, s0, i0, r0)
+            if len(i) < 1:
+                i = infected
+            else:
+                i = i + infected
+            x = x + 1
         return i
 
+    def set_actual_data(self, actual_data):
+        self.actual_data = actual_data
+        cs = actual_data.shape[1] // 3
+        for i in range(cs):
+            self._communities_sir_models.append(SIR())

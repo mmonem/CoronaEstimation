@@ -31,6 +31,13 @@
     </spacer>
    </item>
    <item>
+    <widget class="QPushButton" name="estimateRButton">
+     <property name="text">
+      <string>Estimate R</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QPushButton" name="actualDataFileButton">
@@ -40,9 +47,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="estimateRButton">
+      <widget class="QPushButton" name="RDataFileButton">
        <property name="text">
-        <string>Estimate R</string>
+        <string>R Data File</string>
        </property>
       </widget>
      </item>
@@ -187,6 +194,22 @@
     <hint type="destinationlabel">
      <x>20</x>
      <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RDataFileButton</sender>
+   <signal>clicked()</signal>
+   <receiver>CoronaSimulationDialog</receiver>
+   <slot>r_data_file_selected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>734</x>
+     <y>439</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>490</x>
+     <y>288</y>
     </hint>
    </hints>
   </connection>
