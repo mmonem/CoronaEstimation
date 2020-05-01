@@ -32,16 +32,6 @@ class CoronaSimulationDialog(QDialog):
         actual_data_file = QSettings().value("actual_data_file", "")
         if actual_data_file:
             self.load_actual_data_file(actual_data_file)
-
-        self.ui.sliderRo.setValue(self.sir.Ro * 100)
-        self.ui.sliderGamma.setValue(.15 * 1000)
-        self.ui.sliderBeta.setValue(.25 * 1000)
-        self.reflect_params_to_ui()
-
-        self.ui.sliderGamma.valueChanged.connect(self.gamma_value_changed)
-        self.ui.sliderBeta.valueChanged.connect(self.beta_value_changed)
-        self.ui.sliderRo.valueChanged.connect(self.r0_value_changed)
-
         r, rt = self.load_r()
         self.set_r(r, rt)
 
@@ -65,38 +55,8 @@ class CoronaSimulationDialog(QDialog):
 
     def set_r(self, r, t):
         self.sir.set_r(r, t)
-        data = [["{:d}:{:.2f}".format(int(t[i]), float(r[i])) for i in range(len(t))]]
-        self.ui.tableViewR.setModel(RoTableModel(data))
-        self.ui.tableViewR.model().dataChanged.connect(self.r_updated)
         self.start_execution()
 
-    def gamma_value_changed(self):
-        self.sir.gamma = round((self.ui.sliderGamma.value()) / 1000.0, 3)
-        self.sir.Ro = round(self.beta / self.gamma, 2)
-        self.blockSignals(True)
-        self.ui.sliderRo.blockSignals(True)
-        self.ui.sliderRo.setValue(self.Ro * 100)
-        self.ui.sliderRo.blockSignals(False)
-        self.reflect_params_to_ui()
-        self.start_execution()
-
-    def beta_value_changed(self):
-        self.sir.beta = round((self.ui.sliderBeta.value()) / 1000.0, 3)
-        self.sir.Ro = round(self.beta / self.gamma, 2)
-        self.ui.sliderRo.blockSignals(True)
-        self.ui.sliderRo.setValue(self.Ro * 100)
-        self.ui.sliderRo.blockSignals(False)
-        self.reflect_params_to_ui()
-        self.start_execution()
-
-    def r0_value_changed(self):
-        self.sir.Ro = round((self.ui.sliderRo.value()) / 100.0, 2)
-        self.sir.beta = round(self.Ro * self.gamma, 3)
-        self.ui.sliderBeta.blockSignals(True)
-        self.ui.sliderBeta.setValue(self.beta * 1000)
-        self.ui.sliderBeta.blockSignals(False)
-        self.reflect_params_to_ui()
-        self.start_execution()
 
     def x_formatter(self, x, pos):
         x = int(x)
@@ -125,15 +85,6 @@ class CoronaSimulationDialog(QDialog):
         i = self.sir.execute(t, S0, I0, R0)
 
         self.ax.cla()
-        self.ax2.cla()
-        self.ax2.set_ylabel('R')
-        t_for_r = [int(i) for i in self.sir.Rt_t1]
-        self.ax.xaxis.set_major_locator(LinearLocator(50))
-        self.ax2.plot(t_for_r, self.sir.Rt, color='red', label='R')
-        t_for_r2 = [int(i) for i in t]
-        self.ax2.plot(t_for_r2, self.sir.rt0_interpolate(t), '--', color='red', label='R projected')
-        self.ax2.legend(loc="upper left")
-
         self.ax.xaxis.grid()
         self.ax.yaxis.grid()
         # self.ax.minorticks_on()
@@ -149,11 +100,6 @@ class CoronaSimulationDialog(QDialog):
         self.ax.set_xlim(0, len(actual_infected) + self.simulation_days)
         self.ax.legend(loc="upper right")
         self.canvas.draw_idle()
-
-    def reflect_params_to_ui(self):
-        self.ui.labelBeta.setText("Beta: " + str(self.sir.beta))
-        self.ui.labelRo.setText("Ro: " + str(self.sir.Ro))
-        self.ui.labelGamma.setText("Gamma: " + str(self.sir.gamma))
 
     def load_actual_data_file(self, file_name):
         with open(file_name, newline='') as file:
@@ -193,20 +139,3 @@ class CoronaSimulationDialog(QDialog):
         if self.simulation_days != x:
             self.simulation_days = x
             self.start_execution()
-
-    @pyqtSlot()
-    def r_updated(self):
-        t = []
-        r = []
-        m = self.ui.tableViewR.model()
-        data = m.get_raw_data()
-        for row in data:
-            for c in row:
-                try:
-                    x, y = c.split(':')
-                    t.append(float(x))
-                    r.append(float(y))
-                except:
-                    continue
-        self.set_r(r, t)
-        self.save_r()
