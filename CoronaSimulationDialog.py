@@ -10,13 +10,13 @@ import csv
 from RoTableModel import RoTableModel
 from RtEstimator import RtEstimator
 from gen.Ui_CoronaSimulationDialog import Ui_CoronaSimulationDialog
-from SIR import SIR
+from GlobalModel import GlobalModel
 
 
 class CoronaSimulationDialog(QDialog):
     def __init__(self):
         super().__init__(None)
-        self.sir = SIR()
+        self.sir = GlobalModel()
         self.ui = Ui_CoronaSimulationDialog()
         self.ui.setupUi(self)
         self.fig = Figure()
