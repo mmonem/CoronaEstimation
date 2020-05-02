@@ -37,6 +37,7 @@ class GlobalModel:
             beta = RData.Rt_interpolate[c](t).item(0) * GlobalModel.gamma
             s = y[c * 3]
             i = y[c * 3 + 1]
+            r = y[c * 3 + 2]
 
             if not ConnectivityData.empty():
                 for a in range(len(ConnectivityData.data)):
@@ -49,7 +50,6 @@ class GlobalModel:
                         incoming_infections = infection_ratio_in_a * incoming
                         i = i + incoming_infections
 
-            r = y[c * 3 + 2]
             n = s + i + r
             si = beta * s * i / n
             ir = GlobalModel.gamma * i
