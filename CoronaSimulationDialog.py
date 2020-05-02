@@ -44,10 +44,6 @@ class CoronaSimulationDialog(QDialog):
 
         self.start_execution()
 
-    def load_r_data_file(self, file_name):
-        if RData.load_file(file_name):
-            self.ui.RDataFileButton.setText('R Data File: ' + file_name)
-
     # noinspection PyUnusedLocal
     def x_formatter(self, x, pos):
         x = int(x)
@@ -95,11 +91,15 @@ class CoronaSimulationDialog(QDialog):
 
     def load_actual_data_file(self, file_name):
         if ActualData.load_file(file_name):
-            self.ui.actualDataFileButton.setText('Actual Data File: ' + file_name)
+            self.ui.actualDataFileLineEdit.setText(file_name)
+
+    def load_r_data_file(self, file_name):
+        if RData.load_file(file_name):
+            self.ui.RDataFileLineEdit.setText(file_name)
 
     def load_connectivity_data_file(self, file_name):
         if ConnectivityData.load_file(file_name):
-            self.ui.actualDataFileButton.setText('Connectivity Data File: ' + file_name)
+            self.ui.actualDataFileLineEdit.setText(file_name)
 
     @pyqtSlot()
     def actual_data_file_selected(self):
