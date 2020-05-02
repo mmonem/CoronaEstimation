@@ -99,7 +99,7 @@ class CoronaSimulationDialog(QDialog):
 
     def load_connectivity_data_file(self, file_name):
         if ConnectivityData.load_file(file_name):
-            self.ui.actualDataFileLineEdit.setText(file_name)
+            self.ui.connectivityFileLineEdit.setText(file_name)
 
     @pyqtSlot()
     def actual_data_file_selected(self):

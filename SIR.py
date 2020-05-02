@@ -7,7 +7,6 @@ class SIR:
         self.N = 0  # Total population
         self.beta = .25  # Infection rate
         self.gamma = .15  # The Removal rate
-        self.Ro = round(self.beta / self.gamma, 2)
         self.Rt = []
         self.Rt_t1 = []
         self.rt0_interpolate = None
