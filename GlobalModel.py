@@ -39,6 +39,10 @@ class GlobalModel:
             i = y[c * 3 + 1]
             r = y[c * 3 + 2]
 
+            incoming_s = 0
+            incoming_i = 0
+            incoming_r = 0
+
             if not ConnectivityData.empty():
                 for a in range(len(ConnectivityData.data)):
                     if a != c:
@@ -48,22 +52,34 @@ class GlobalModel:
                         ra = y[a * 3 + 2]
 
                         s_ratio_in_a = sa / (sa + ia + ra)
-                        incoming_s = s_ratio_in_a * incoming
-                        s = s + incoming_s
+                        incoming_s = incoming_s + s_ratio_in_a * incoming
 
                         i_ratio_in_a = ia / (sa + ia + ra)
-                        incoming_i = i_ratio_in_a * incoming
-                        i = i + incoming_i
+                        incoming_i = incoming_i + i_ratio_in_a * incoming
 
                         r_ratio_in_a = ra / (sa + ia + ra)
-                        incoming_r = r_ratio_in_a * incoming
-                        r = r + incoming_r
+                        incoming_r = incoming_r + r_ratio_in_a * incoming
 
+                for a in range(len(ConnectivityData.data)):
+                    if a != c:
+                        outgoing = ConnectivityData.data[a][c]
+                        sa = y[a * 3]
+                        ia = y[a * 3 + 1]
+                        ra = y[a * 3 + 2]
+
+                        s_ratio_in_a = sa / (sa + ia + ra)
+                        incoming_s = incoming_s - s_ratio_in_a * outgoing
+
+                        i_ratio_in_a = ia / (sa + ia + ra)
+                        incoming_i = incoming_i - i_ratio_in_a * outgoing
+
+                        r_ratio_in_a = ra / (sa + ia + ra)
+                        incoming_r = incoming_r - r_ratio_in_a * outgoing
 
             n = s + i + r
             si = beta * s * i / n
             ir = GlobalModel.gamma * i
-            ret.append(-si)
-            ret.append(si - ir)
-            ret.append(ir)
+            ret.append(-si + incoming_s)
+            ret.append(si - ir + incoming_i)
+            ret.append(ir + incoming_r)
         return ret
