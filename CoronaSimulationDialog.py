@@ -7,6 +7,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from ActualData import ActualData
+from ConnectivityData import ConnectivityData
 from RData import RData
 from RtEstimator import RtEstimator
 from gen.Ui_CoronaSimulationDialog import Ui_CoronaSimulationDialog
@@ -36,6 +37,10 @@ class CoronaSimulationDialog(QDialog):
         r_data_file = QSettings().value("r_data_file", "")
         if r_data_file:
             self.load_r_data_file(r_data_file)
+
+        connectivity_data_file = QSettings().value("connectivity_data_file", "")
+        if connectivity_data_file:
+            self.load_connectivity_data_file(connectivity_data_file)
 
         self.start_execution()
 
@@ -92,6 +97,10 @@ class CoronaSimulationDialog(QDialog):
         if ActualData.load_file(file_name):
             self.ui.actualDataFileButton.setText('Actual Data File: ' + file_name)
 
+    def load_connectivity_data_file(self, file_name):
+        if ConnectivityData.load_file(file_name):
+            self.ui.actualDataFileButton.setText('Connectivity Data File: ' + file_name)
+
     @pyqtSlot()
     def actual_data_file_selected(self):
         t = QFileDialog.getOpenFileName(self, filter="csv(*.csv)")
@@ -108,6 +117,15 @@ class CoronaSimulationDialog(QDialog):
         if file_name:
             QSettings().setValue("r_data_file", file_name)
             self.load_r_data_file(file_name)
+            self.start_execution()
+
+    @pyqtSlot()
+    def connectivity_data_file_selected(self):
+        t = QFileDialog.getOpenFileName(self, filter="csv(*.csv)")
+        file_name = t[0]
+        if file_name:
+            QSettings().setValue("connectivity_data_file", file_name)
+            self.load_connectivity_data_file(file_name)
             self.start_execution()
 
     @pyqtSlot()

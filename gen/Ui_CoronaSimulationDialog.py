@@ -32,6 +32,9 @@ class Ui_CoronaSimulationDialog(object):
         self.RDataFileButton = QtWidgets.QPushButton(CoronaSimulationDialog)
         self.RDataFileButton.setObjectName("RDataFileButton")
         self.horizontalLayout_2.addWidget(self.RDataFileButton)
+        self.connectivityDataFileButton = QtWidgets.QPushButton(CoronaSimulationDialog)
+        self.connectivityDataFileButton.setObjectName("connectivityDataFileButton")
+        self.horizontalLayout_2.addWidget(self.connectivityDataFileButton)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -62,6 +65,7 @@ class Ui_CoronaSimulationDialog(object):
         self.estimateRButton.clicked.connect(CoronaSimulationDialog.estimate_R)
         self.lineEditSimulationDays.textEdited['QString'].connect(CoronaSimulationDialog.simulationDaysChanged)
         self.RDataFileButton.clicked.connect(CoronaSimulationDialog.r_data_file_selected)
+        self.connectivityDataFileButton.clicked.connect(CoronaSimulationDialog.connectivity_data_file_selected)
         QtCore.QMetaObject.connectSlotsByName(CoronaSimulationDialog)
 
     def retranslateUi(self, CoronaSimulationDialog):
@@ -70,5 +74,6 @@ class Ui_CoronaSimulationDialog(object):
         self.estimateRButton.setText(_translate("CoronaSimulationDialog", "Estimate R"))
         self.actualDataFileButton.setText(_translate("CoronaSimulationDialog", "Actual Data File"))
         self.RDataFileButton.setText(_translate("CoronaSimulationDialog", "R Data File"))
+        self.connectivityDataFileButton.setText(_translate("CoronaSimulationDialog", "Connectivity Data File"))
         self.lineEditSimulationDays.setText(_translate("CoronaSimulationDialog", "30"))
         self.label.setText(_translate("CoronaSimulationDialog", "Simulation Days"))

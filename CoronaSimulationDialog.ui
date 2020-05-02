@@ -53,6 +53,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="connectivityDataFileButton">
+       <property name="text">
+        <string>Connectivity Data File</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -205,6 +212,22 @@
    <hints>
     <hint type="sourcelabel">
      <x>734</x>
+     <y>439</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>490</x>
+     <y>288</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>connectivityDataFileButton</sender>
+   <signal>clicked()</signal>
+   <receiver>CoronaSimulationDialog</receiver>
+   <slot>connectivity_data_file_selected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>815</x>
      <y>439</y>
     </hint>
     <hint type="destinationlabel">
