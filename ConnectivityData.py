@@ -15,7 +15,7 @@ class ConnectivityData:
                 try:
                     ConnectivityData.data = list(csv.reader(file))
                     data = np.asarray(ConnectivityData.data)
-                    ConnectivityData.data = data[:, 1:].astype(float)
+                    ConnectivityData.data = data.astype(float)
                     return True
 
                 except Exception:
