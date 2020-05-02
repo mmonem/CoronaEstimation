@@ -46,9 +46,19 @@ class GlobalModel:
                         sa = y[a * 3]
                         ia = y[a * 3 + 1]
                         ra = y[a * 3 + 2]
-                        infection_ratio_in_a = ia / (sa + ia + ra)
-                        incoming_infections = infection_ratio_in_a * incoming
-                        i = i + incoming_infections
+
+                        s_ratio_in_a = sa / (sa + ia + ra)
+                        incoming_s = s_ratio_in_a * incoming
+                        s = s + incoming_s
+
+                        i_ratio_in_a = ia / (sa + ia + ra)
+                        incoming_i = i_ratio_in_a * incoming
+                        i = i + incoming_i
+
+                        r_ratio_in_a = ra / (sa + ia + ra)
+                        incoming_r = r_ratio_in_a * incoming
+                        r = r + incoming_r
+
 
             n = s + i + r
             si = beta * s * i / n
