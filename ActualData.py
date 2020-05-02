@@ -6,7 +6,7 @@ import numpy as np
 
 # noinspection PyBroadException
 class ActualData:
-    actual_data = np.array
+    actual_data = np.zeros((0,0))
     days = []
     first_day = ''
     actual_infected = []
@@ -42,3 +42,9 @@ class ActualData:
         if len(ActualData.days) < 1:
             return True
         return False
+
+    @staticmethod
+    def last_data(c):
+        t = ActualData.actual_data.shape[0] - 1
+        c = c * 3
+        return ActualData.actual_data.item((t, c)), ActualData.actual_data.item((t, c + 1)), ActualData.actual_data.item((t, c + 2))

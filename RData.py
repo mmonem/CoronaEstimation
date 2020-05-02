@@ -1,13 +1,15 @@
 import csv
 import os
-
 import numpy as np
+from scipy.interpolate import interp1d
+from ActualData import ActualData
 
 
 # noinspection PyBroadException
 class RData:
     Rt = None
     Rt_t1 = []
+    Rt_interpolate = []
 
     @staticmethod
     def load_file(file_name):
@@ -21,9 +23,19 @@ class RData:
                         RData.Rt[i, :] = np.asarray(r)[i, 1:].astype(float)
                         r = np.asarray(r)
                         RData.Rt_t1 = r[:, 0].astype(int).tolist()
+
+                    for c in range(RData.Rt.shape[1]):
+                        x = RData.Rt_t1[-5:]
+                        y = RData.Rt[-5:, c]
+                        s0, i0, r0 = ActualData.last_data(c)
+                        y = [x * s0 / (s0 + i0 + r0) for x in y]  # Multiplying by S/N as suggested by Dr. Aly Farahat
+                        RData.Rt_interpolate.append(interp1d(x, y, kind='nearest', fill_value="extrapolate"))
+
                     return True
 
-                except Exception:
+                except Exception as e:
+                    print(e)
+                    quit(-1)
                     return False
 
         return False
