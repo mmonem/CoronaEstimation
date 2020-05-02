@@ -1,6 +1,7 @@
 from scipy.integrate import odeint
 
 from ActualData import ActualData
+from ConnectivityData import ConnectivityData
 from RData import RData
 
 
@@ -36,6 +37,18 @@ class GlobalModel:
             beta = RData.Rt_interpolate[c](t).item(0) * GlobalModel.gamma
             s = y[c * 3]
             i = y[c * 3 + 1]
+
+            if not ConnectivityData.empty():
+                for a in range(len(ConnectivityData.data)):
+                    if a != c:
+                        incoming = ConnectivityData.data[c][a]
+                        sa = y[a * 3]
+                        ia = y[a * 3 + 1]
+                        ra = y[a * 3 + 2]
+                        infection_ratio_in_a = ia / (sa + ia + ra)
+                        incoming_infections = infection_ratio_in_a * incoming
+                        i = i + incoming_infections
+
             r = y[c * 3 + 2]
             n = s + i + r
             si = beta * s * i / n
